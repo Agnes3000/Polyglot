@@ -1,6 +1,40 @@
-let isPanelOpen = false;
+class Panel {
+	constructor(domID) {
+		this.domID = domID;
+		this.isOpen = false;
+
+		this.show();
+	}
+
+	domElement() {
+		return document.getElementById(this.domID);
+	}
+
+	show(content = '', bounds) {
+		if (this.isOpen) {
+			this.remove();
+		}
+		if (bounds === null) {
+			return false;
+		}
+		const el = document.createElement('div');
+		el.innerHTML = content;
+		el.id = this.domID;
+		el.style.left = bounds.left + 'px';
+		el.style.top = bounds.bottom + 'px';
+		document.body.insertBefore(el, document.body.firstChild);
+		this.isOpen = true;
+	}
+
+	remove() {
+		this.domElement().remove();
+		this.isOpen = false;
+	}
+}
+
 let keyboardShortcut = null;
-const PANEL_ID = 'polyglot__panel';
+
+const panel = new Panel('polyglot__panel', this);
 
 // Only initialize in a top-level page
 if (window.top === window) {
@@ -22,10 +56,10 @@ function handleMessage(msg) {
 			getSelectedText();
 			break;
 		case 'showPanel':
-			showPanel(msg.message);
+			panel.show(msg.message, getSelectionBoundingRect());
 			break;
 		case 'updatePanel':
-			updatePanel(msg.message);
+			panel.update(msg.message);
 			break;
 		default:
 
@@ -33,10 +67,8 @@ function handleMessage(msg) {
 }
 
 function handleMouseUp(e) {
-	const panel = document.getElementById(PANEL_ID);
-
 	if (isPanelOpen && !isDescendant(panel, e.target)) {
-		removePanel();
+		panel.remove();
 	}
 }
 
@@ -50,35 +82,6 @@ function handleKeydown(e) {
 function getSelectedText() {
 	const sel = window.getSelection().toString();
 	safari.self.tab.dispatchMessage('finishedGetSelectedText', sel);
-}
-
-function removePanel() {
-	const panel = document.getElementById(PANEL_ID);
-	panel.remove();
-	isPanelOpen = false;
-}
-
-// Show panel with given text
-function showPanel(content) {
-	if (isPanelOpen) {
-		removePanel();
-	}
-	const bounds = getSelectionBoundingRect();
-	if (bounds === null) {
-		return false;
-	}
-	const el = document.createElement('div');
-	el.innerHTML = content;
-	el.id = PANEL_ID;
-	el.style.left = bounds.left + 'px';
-	el.style.top = bounds.bottom + 'px';
-	document.body.insertBefore(el, document.body.firstChild);
-	isPanelOpen = true;
-}
-
-function updatePanel(content) {
-	const el = document.getElementById(PANEL_ID);
-	el.innerHTML = content;
 }
 
 // Return selection coords
