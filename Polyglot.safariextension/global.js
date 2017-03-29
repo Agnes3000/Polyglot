@@ -30,7 +30,10 @@ function handleMessage(msg) {
 }
 
 function handleFinishedGetSelectedText(msg) {
-	if (msg.message === '') {
+	const text = msg.message.text;
+	// const table = msg.message.table;
+
+	if (text === '') {
 		return;
 	}
 	const target = msg.target;
@@ -41,7 +44,10 @@ function handleFinishedGetSelectedText(msg) {
 		return;
 	}
 
-	translate(msg.message, settings.targetLanguage).then(translatedText => {
+	translate(text, settings.targetLanguage).then(translatedText => {
+		// const tText = translatedText.replace(/<(.+?)>/g, (element, group) => {
+		// 	return table[element.replace(/\s/, '')];
+		// });
 		target.page.dispatchMessage('updatePanel', translatedText);
 	}).catch(err => {
 		target.page.dispatchMessage('updatePanel', err);

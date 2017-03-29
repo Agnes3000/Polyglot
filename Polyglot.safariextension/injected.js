@@ -45,9 +45,33 @@ function handleKeypress(e) {
 	}
 }
 
+function getSelectedArea() {
+	const selectedText = window.getSelection().toString();
+	console.log(window.getSelection().getRangeAt(0));
+	const ancester = window.getSelection().getRangeAt(0).commonAncestorContainer.innerHTML;
+	console.log(ancester);
+	let index = 1;
+	let tagTable = {};
+	const tAncester = ancester.replace(/<(.+?)>/g, (element, group) => {
+		console.log(index, group);
+		let res = '';
+		if (group.startsWith('/')) {
+			res = `</a${index}>`;
+			index = index + 1;
+		} else {
+			res = `<a${index}>`;
+		}
+		tagTable[res] = element;
+		return res;
+	});
+	console.log(tAncester);
+	console.log(tagTable);
+	safari.self.tab.dispatchMessage('finishedGetSelectedText', {text: tAncester, table: tagTable});
+}
+
 function getSelectedText() {
 	const selectedText = window.getSelection().toString();
-	safari.self.tab.dispatchMessage('finishedGetSelectedText', selectedText);
+	safari.self.tab.dispatchMessage('finishedGetSelectedText', {text: selectedText});
 }
 
 function removePanel() {
